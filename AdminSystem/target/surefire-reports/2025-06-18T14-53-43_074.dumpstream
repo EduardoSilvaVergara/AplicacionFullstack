@@ -1,0 +1,5 @@
+# Created at 2025-06-18T14:53:43.193
+Boot Manifest-JAR contains absolute paths in classpath 'D:\Users\Edu\Gorilla Setups\Proyecto semestral fullstack entrega 2\Microservicio 1\AdminSystem\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+

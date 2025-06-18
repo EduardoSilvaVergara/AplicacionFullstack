@@ -1,0 +1,5 @@
+com\AdminSystem\AdminSystem\Controller\MoniSistemaControllerTest.class
+com\AdminSystem\AdminSystem\Controller\UsuarioControllerTest.class
+com\AdminSystem\AdminSystem\Service\MoniSistemaServiceTest.class
+com\AdminSystem\AdminSystem\Service\UsuarioServiceTest.class
+com\AdminSystem\AdminSystem\AdminSystemApplicationTests.class
