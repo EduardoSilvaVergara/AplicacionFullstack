@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Monitorización", description = "Operaciones para monitorear el estado, alertas y métricas del sistema")
 @RestController
-@RequestMapping("/api/v1/monitor")
+@RequestMapping("/api/v2/monitor")
 public class MoniSistemaControllerV2 {
 
     private final MoniSistemaService moniSistemaService;
@@ -34,9 +34,14 @@ public class MoniSistemaControllerV2 {
     @Operation(summary = "Forzar un chequeo manual del sistema")
     @ApiResponse(responseCode = "200", description = "Chequeo realizado exitosamente")
     @PostMapping("/chequeo")
-    public Map<String, String> checkNow() {
-        moniSistemaService.checkSystem();
-        return Map.of("mensaje", "Chequeo realizado exitosamente");
+    public EntityModel<Map<String, String>> checkNow() {
+    moniSistemaService.checkSystem();
+    Map<String, String> respuesta = Map.of("mensaje", "Chequeo realizado exitosamente");
+    return EntityModel.of(respuesta,
+        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getStatus()).withRel("estado"),
+        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getAlerts()).withRel("alertas"),
+        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getMetrics()).withRel("metricas")
+        );
     }
 
     @Operation(summary = "Obtener el último estado del sistema")
@@ -47,9 +52,9 @@ public class MoniSistemaControllerV2 {
     public EntityModel<SystemStatus> getStatus() {
         SystemStatus status = moniSistemaService.getLastStatus();
         return EntityModel.of(status,
-            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getStatus()).withSelfRel(),
-            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withRel("alertas"),
-            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withRel("metricas")
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getStatus()).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getAlerts()).withRel("alertas"),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getMetrics()).withRel("metricas")
         );
     }
 
@@ -61,11 +66,11 @@ public class MoniSistemaControllerV2 {
     public CollectionModel<EntityModel<SystemAlert>> getAlerts() {
         List<EntityModel<SystemAlert>> alertas = moniSistemaService.getAlerts().stream()
             .map(alert -> EntityModel.of(alert,
-                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withSelfRel()
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getAlerts()).withSelfRel()
             ))
             .collect(Collectors.toList());
         return CollectionModel.of(alertas,
-            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withSelfRel()
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getAlerts()).withSelfRel()
         );
     }
 
@@ -77,11 +82,11 @@ public class MoniSistemaControllerV2 {
     public CollectionModel<EntityModel<SystemMetric>> getMetrics() {
         List<EntityModel<SystemMetric>> metricas = moniSistemaService.getMetrics().stream()
             .map(metric -> EntityModel.of(metric,
-                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withSelfRel()
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getMetrics()).withSelfRel()
             ))
             .collect(Collectors.toList());
         return CollectionModel.of(metricas,
-            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withSelfRel()
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaControllerV2.class).getMetrics()).withSelfRel()
         );
     }
 }

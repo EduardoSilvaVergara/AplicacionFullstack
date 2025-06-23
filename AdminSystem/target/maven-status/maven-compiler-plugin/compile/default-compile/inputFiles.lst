@@ -1,6 +1,8 @@
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\AdminSystemApplication.java
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Controller\MoniSistemaController.java
+D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Controller\MoniSistemaControllerV2.java
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Controller\UsuarioController.java
+D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Controller\UsuarioControllerV2.java
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Model\Rol.java
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Model\SystemAlert.java
 D:\Users\Edu\Gorilla Setups\Test\AdminSystem\src\main\java\com\AdminSystem\AdminSystem\Model\SystemMetric.java
