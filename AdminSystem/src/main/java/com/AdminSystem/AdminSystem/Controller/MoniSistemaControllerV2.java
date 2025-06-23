@@ -1,5 +1,8 @@
 package com.AdminSystem.AdminSystem.Controller;
 
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import com.AdminSystem.AdminSystem.Model.SystemAlert;
@@ -9,6 +12,7 @@ import com.AdminSystem.AdminSystem.Service.MoniSistemaService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,11 +23,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Monitorización", description = "Operaciones para monitorear el estado, alertas y métricas del sistema")
 @RestController
 @RequestMapping("/api/v1/monitor")
-public class MoniSistemaController {
+public class MoniSistemaControllerV2 {
 
     private final MoniSistemaService moniSistemaService;
 
-    public MoniSistemaController(MoniSistemaService moniSistemaService) {
+    public MoniSistemaControllerV2(MoniSistemaService moniSistemaService) {
         this.moniSistemaService = moniSistemaService;
     }
 
@@ -40,8 +44,13 @@ public class MoniSistemaController {
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = SystemStatus.class)))
     @GetMapping("/estado")
-    public SystemStatus getStatus() {
-        return moniSistemaService.getLastStatus();
+    public EntityModel<SystemStatus> getStatus() {
+        SystemStatus status = moniSistemaService.getLastStatus();
+        return EntityModel.of(status,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getStatus()).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withRel("alertas"),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withRel("metricas")
+        );
     }
 
     @Operation(summary = "Obtener la lista de alertas del sistema")
@@ -49,8 +58,15 @@ public class MoniSistemaController {
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = SystemAlert.class)))
     @GetMapping("/alertas")
-    public List<SystemAlert> getAlerts() {
-        return moniSistemaService.getAlerts();
+    public CollectionModel<EntityModel<SystemAlert>> getAlerts() {
+        List<EntityModel<SystemAlert>> alertas = moniSistemaService.getAlerts().stream()
+            .map(alert -> EntityModel.of(alert,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withSelfRel()
+            ))
+            .collect(Collectors.toList());
+        return CollectionModel.of(alertas,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getAlerts()).withSelfRel()
+        );
     }
 
     @Operation(summary = "Obtener la lista de métricas del sistema")
@@ -58,7 +74,14 @@ public class MoniSistemaController {
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = SystemMetric.class)))
     @GetMapping("/metricas")
-    public List<SystemMetric> getMetrics() {
-        return moniSistemaService.getMetrics();
+    public CollectionModel<EntityModel<SystemMetric>> getMetrics() {
+        List<EntityModel<SystemMetric>> metricas = moniSistemaService.getMetrics().stream()
+            .map(metric -> EntityModel.of(metric,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withSelfRel()
+            ))
+            .collect(Collectors.toList());
+        return CollectionModel.of(metricas,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(MoniSistemaController.class).getMetrics()).withSelfRel()
+        );
     }
 }

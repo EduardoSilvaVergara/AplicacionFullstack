@@ -1,5 +1,8 @@
 package com.AdminSystem.AdminSystem.Controller;
 
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import com.AdminSystem.AdminSystem.Model.Rol;
@@ -9,6 +12,7 @@ import com.AdminSystem.AdminSystem.Service.UsuarioService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,12 +24,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Usuarios", description = "Operaciones relacionadas con usuarios y roles")
 @RestController
 @RequestMapping("/api/v1/usuarios")
-public class UsuarioController {
+public class UsuarioControllerV2 {
 
     private final UsuarioService usuarioService;
     private final RolRepository rolRepository;
 
-    public UsuarioController(UsuarioService usuarioService, RolRepository rolRepository) {
+    public UsuarioControllerV2(UsuarioService usuarioService, RolRepository rolRepository) {
         this.usuarioService = usuarioService;
         this.rolRepository = rolRepository;
     }
@@ -38,8 +42,12 @@ public class UsuarioController {
         @ApiResponse(responseCode = "400", description = "Solicitud inválida")
     })
     @PostMapping("/crear")
-    public Usuario crearUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.crearUsuario(usuario);
+    public EntityModel<Usuario> crearUsuario(@RequestBody Usuario usuario) {
+        Usuario creado = usuarioService.crearUsuario(usuario);
+        return EntityModel.of(creado,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).crearUsuario(usuario)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerUsuarios()).withRel("usuarios")
+        );
     }
 
     @Operation(summary = "Actualizar un usuario existente")
@@ -50,8 +58,12 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PutMapping("/{id}")
-    public Usuario actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
-        return usuarioService.actualizarUsuario(id, usuario);
+    public EntityModel<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
+        Usuario actualizado = usuarioService.actualizarUsuario(id, usuario);
+        return EntityModel.of(actualizado,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).actualizarUsuario(id, usuario)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerUsuarios()).withRel("usuarios")
+        );
     }
 
     @Operation(summary = "Eliminar un usuario por ID")
@@ -62,7 +74,7 @@ public class UsuarioController {
     @DeleteMapping("{id}")
     public Map<String, String> eliminarUsuario(@PathVariable Long id) {
         usuarioService.eliminarUsuario(id);
-        return Map.of("mensaje", "Usuario eliminado exitosamente");
+            return Map.of("mensaje", "Usuario eliminado exitosamente");
     }
 
     @Operation(summary = "Obtener la lista de todos los usuarios")
@@ -70,8 +82,16 @@ public class UsuarioController {
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = Usuario.class)))
     @GetMapping("/listar")
-    public List<Usuario> obtenerUsuarios() {
-        return usuarioService.obtenerUsuarios();
+    public CollectionModel<EntityModel<Usuario>> obtenerUsuarios() {
+        List<EntityModel<Usuario>> usuarios = usuarioService.obtenerUsuarios().stream()
+            .map(usuario -> EntityModel.of(usuario,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).actualizarUsuario(usuario.getId(), usuario)).withRel("actualizar"),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).eliminarUsuario(usuario.getId())).withRel("eliminar")
+            ))
+            .collect(Collectors.toList());
+        return CollectionModel.of(usuarios,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerUsuarios()).withSelfRel()
+        );
     }
 
     @Operation(summary = "Crear un nuevo rol")
@@ -82,8 +102,12 @@ public class UsuarioController {
         @ApiResponse(responseCode = "400", description = "Solicitud inválida")
     })
     @PostMapping("/crearRol")
-    public Rol crearRol(@RequestBody Rol rol) {
-        return rolRepository.save(rol);
+    public EntityModel<Rol> crearRol(@RequestBody Rol rol) {
+        Rol creado = rolRepository.save(rol);
+        return EntityModel.of(creado,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).crearRol(rol)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerRoles()).withRel("roles")
+        );
     }
 
     @Operation(summary = "Actualizar permisos de un rol")
@@ -94,8 +118,12 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Rol no encontrado")
     })
     @PutMapping("/permisos/{idRol}")
-    public Rol actualizarPermisosRol(@PathVariable Long idRol, @RequestBody String permisos) {
-        return usuarioService.actualizarPermisosRol(idRol, permisos);
+    public EntityModel<Rol> actualizarPermisosRol(@PathVariable Long idRol, @RequestBody String permisos) {
+        Rol actualizado = usuarioService.actualizarPermisosRol(idRol, permisos);
+        return EntityModel.of(actualizado,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).actualizarPermisosRol(idRol, permisos)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerRoles()).withRel("roles")
+        );
     }
 
     @Operation(summary = "Obtener la lista de roles")
@@ -103,7 +131,14 @@ public class UsuarioController {
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = Rol.class)))
     @GetMapping("/roles")
-    public List<Rol> obtenerRoles() {
-        return usuarioService.obtenerRoles();
+    public CollectionModel<EntityModel<Rol>> obtenerRoles() {
+        List<EntityModel<Rol>> roles = usuarioService.obtenerRoles().stream()
+            .map(rol -> EntityModel.of(rol,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).actualizarPermisosRol(rol.getId(), rol.getPermisos())).withRel("actualizarPermisos")
+            ))
+            .collect(Collectors.toList());
+        return CollectionModel.of(roles,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).obtenerRoles()).withSelfRel()
+        );
     }
 }
